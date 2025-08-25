@@ -46,3 +46,12 @@ Integracja tworzy dwa sensory w Home Assistant:
   * **attributes**: Lista aktualnych, aktywnych zdarzeń. Każde zdarzenie zawiera informacje o urządzeniu użytkownika (device\_id), numerze linii (route\_name) oraz identyfikatorze pojazdu (bus\_id).
 * **ZTM Tracker Last Route**
   * **state**: Zawiera numer ostatniej linii autobusowej, która została wykryta w pobliżu.
+
+## **Autor**
+
+Autorem kodu jest Gemini AI. Moja rola ograniczyła się do:
+
+- Pomysłu na integrację i spisania tego do prompta
+- Testowania
+- Przeglądania kodu, kiedy AI zaczynało halucynować i wprowadzać błędy do już działającego kodu
+- Wpisywania kolejnych sugestii, poprawek, pomysłów na nowe parametry i ograniczenia.
