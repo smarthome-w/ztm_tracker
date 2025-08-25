@@ -1,35 +1,48 @@
-# **Integracja Home Assistant ZTM Tracker**
+# **ZTM Tracker Home Assistant Integration**
 
-**Uwaga: Cała ta integracja została stworzona przez Gemini AI, z ograniczonymi ręcznymi inspekcjami kodu i testami w celu uniknięcia halucynacji AI.**
+Integracja do Home Assistant, która śledzi autobusy ZTM w Gdańsku i powiadamia o ich zbliżaniu się do wybranej lokalizacji.
 
-## **Logika Integracji**
+## **Opis**
 
-Podstawą tej integracji jest jej zdolność do tworzenia „zdarzeń”, gdy pojazd transportu publicznego znajdzie się w określonym promieniu od monitorowanego urządzenia śledzącego. Działa ona w następujący sposób:
+Ta integracja pozwala na monitorowanie lokalizacji autobusów ZTM w Trójmieście. Wykorzystuje dane GPS udostępniane przez ZTM Gdańsk, aby określić, czy jakiś autobus znajduje się w zdefiniowanej strefie wokół jednego z Twoich **device\_trackers**.
+Integracja używa logiki opartej na shots\_in i shots\_out, aby uniknąć fałszywych alarmów spowodowanych chwilową utratą sygnału:
 
-1. **Pobieranie danych ZTM:** Komponent regularnie pobiera w czasie rzeczywistym dane o lokalizacji pojazdów z oficjalnego API ZTM.
-2. **Znajdowanie bliskości:** Następnie porównuje lokalizację każdego skonfigurowanego urządzenia śledzącego (np. Twojego telefonu) z lokalizacją wszystkich dostępnych pojazdów ZTM.
-3. **Ustanawianie zdarzenia:** Aby uniknąć fałszywych alarmów wynikających z krótkich zakłóceń sygnału, „zdarzenie” jest ustanawiane dopiero, gdy pojazd zostanie wykryty w promieniu przez określoną liczbę kolejnych cykli pobierania danych z API, zdefiniowaną przez parametr shots\_in.
-4. **Podtrzymywanie zdarzenia:** Zdarzenie pozostaje aktywne tak długo, jak pojazd jest stale wykrywany. Jeśli pojazd opuści promień, komponent zezwala na pewną liczbę „shots out” zanim zdarzenie zostanie uznane za zakończone. Zapobiega to przedwczesnemu zakończeniu zdarzenia.
-5. **Śledzenie ostatniej trasy:** Oddzielny, bardziej responsywny sensor śledzi „ostatnią widzianą trasę”. Wartość ta aktualizuje się natychmiast po wykryciu prawidłowego pojazdu w promieniu, zapewniając natychmiastową informację zwrotną o tym, która linia transportu publicznego jest aktualnie w pobliżu, nawet jeśli próg shots\_in dla pełnego zdarzenia nie został jeszcze osiągnięty.
+* **shots\_in**: Autobus musi być wykryty w Twojej strefie przez określoną liczbę kolejnych cykli odświeżania, zanim zostanie uznane, że "wszedł" w strefę.
+* **shots\_out**: Autobus musi zniknąć z Twojej strefy przez określoną liczbę kolejnych cykli odświeżania, zanim zostanie uznane, że "opuścił" strefę.
 
-## **Parametry Konfiguracji**
+Gdy autobus spełni kryteria shots\_in, integracja aktywuje sensora, którego możesz użyć w automatyzacjach, aby na przykład wysłać powiadomienie.
 
-Integrację można skonfigurować za pomocą interfejsu użytkownika Home Assistant. Następujące parametry kontrolują jej działanie:
+## **Instalacja**
 
-| Parametr | Wartość domyślna | Opis |
-| :---- | :---- | :---- |
-| Urządzenia śledzące | device\_tracker.your\_device | Lista identyfikatorów encji Home Assistant, które reprezentują urządzenia, których chcesz używać do śledzenia bliskości (np. device\_tracker.waldek). |
-| Promień | 50 | Odległość w metrach, w jakiej pojazd ZTM musi znajdować się od urządzenia śledzącego, aby zostać uznany za „w pobliżu”. |
-| Plik danych | <https://ckan2.multimediagdansk.pl/gpsPositions?v=2> | Adres URL kanału danych API ZTM. Zaleca się pozostawienie tej wartości jako domyślnej, chyba że API ulegnie zmianie. |
-| Shots In | 2 | Liczba kolejnych wykryć pojazdu w promieniu, zanim zostanie zarejestrowane „zdarzenie”. |
-| Shots Out | 3 | Liczba kolejnych wykryć, gdy pojazd jest poza promieniem (lub nie został wykryty), zanim aktywne zdarzenie zostanie uznane za zakończone. |
-| Automatyczny interwał | 3 | Interwał w minutach, w którym integracja będzie automatycznie pobierać nowe dane z API ZTM. |
-| Przesunięcie czasu GPS | 120 | Maksymalny wiek, w sekundach, danych GPS pojazdu, aby były uważane za prawidłowe. Pojazdy ze starszymi danymi będą ignorowane. |
-| Biała lista linii | 2,5,12,169,171,179 | Lista numerów konkretnych linii transportu publicznego (np. 12, 169), oddzielonych przecinkami, które mają być śledzone. Jeśli to pole jest puste, śledzone będą wszystkie linie. |
+Integracja jest przeznaczona do instalacji za pomocą **HACS** (Home Assistant Community Store).
+
+1. Upewnij się, że masz zainstalowany HACS.
+2. Przejdź do HACS, a następnie do sekcji **Integracje**.
+3. Kliknij przycisk z trzema kropkami w prawym górnym rogu, a następnie wybierz **Własne repozytoria**.
+4. Wklej adres URL tego repozytorium i wybierz kategorię **Integracja**.
+5. Repozytorium pojawi się na liście. Kliknij **Zainstaluj**.
+6. Po zakończeniu instalacji, uruchom ponownie Home Assistant.
+
+## **Konfiguracja**
+
+Po ponownym uruchomieniu Home Assistant, dodaj integrację **ZTM Tracker** poprzez interfejs użytkownika.
+Możesz skonfigurować następujące parametry:
+
+* CONF\_DEVICE\_TRACKERS: Wymagany. Lista **device\_trackers** do monitorowania. Integracja będzie śledzić lokalizację każdego z tych urządzeń.
+* CONF\_RADIUS: Opcjonalny. Promień strefy, w metrach, wokół **device\_trackers**. Wartość domyślna to 50 metrów.
+* CONF\_DATA\_FILE: Opcjonalny. Adres URL pliku danych GPS z ZTM. Domyślny URL jest już poprawny.
+* CONF\_SHOTS\_IN: Opcjonalny. Liczba kolejnych cykli odświeżania, w których autobus musi być wykryty w strefie, aby zdarzenie zostało uznane za aktywne. Wartość domyślna to 2\.
+* CONF\_SHOTS\_OUT: Opcjonalny. Liczba kolejnych cykli odświeżania, w których autobus musi zniknąć ze strefy, aby zdarzenie zostało zakończone. Wartość domyślna to 3\.
+* CONF\_AUTOMATIC\_INTERVAL: Opcjonalny. Interwał odświeżania danych GPS z ZTM w minutach. Wartość domyślna to 3 minuty.
+* CONF\_GPS\_TIME\_OFFSET: Opcjonalny. Maksymalny wiek danych GPS autobusu w sekundach. Starsze dane zostaną zignorowane. Wartość domyślna to 120 sekund.
+* CONF\_LINES\_WHITELIST: Opcjonalny. Lista numerów linii autobusowych, oddzielona przecinkami, które mają być śledzone. Jeśli pusta, śledzone są wszystkie linie. Domyślna wartość to 2,5,12,169,171,179.
 
 ## **Sensory**
 
-Ta integracja udostępnia dwa główne sensory:
+Integracja tworzy dwa sensory w Home Assistant:
 
-* **ztm\_tracker\_events**: Stan tego sensora wskazuje, czy trwa aktywne zdarzenie. Jego atrybuty będą zawierać szczegółową listę wszystkich bieżących zdarzeń, w tym ID pojazdu, liczby shots\_in i shots\_out oraz event\_summary, który zawiera nazwę urządzenia śledzącego i numer trasy.
-* **ztm\_tracker\_last\_route**: Stan tego sensora to ciąg znaków, który pokazuje ostatnią trasę transportu publicznego wykrytą w pobliżu odpowiedniego urządzenia śledzącego. Format to \[Nazwa urządzenia śledzącego\] \- \[Numer trasy\]. Ten sensor aktualizuje się natychmiast, gdy tylko zostanie wykryta nowa trasa.
+* **ZTM Tracker Events**
+  * **state**: Zmienia się na active, gdy wykryty zostanie aktywny autobus w strefie, w przeciwnym razie jest inactive.
+  * **attributes**: Lista aktualnych, aktywnych zdarzeń. Każde zdarzenie zawiera informacje o urządzeniu użytkownika (device\_id), numerze linii (route\_name) oraz identyfikatorze pojazdu (bus\_id).
+* **ZTM Tracker Last Route**
+  * **state**: Zawiera numer ostatniej linii autobusowej, która została wykryta w pobliżu.
