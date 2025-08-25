@@ -1,0 +1,11 @@
+{
+    "domain": "ztm_tracker",
+    "name": "ZTM Tracker",
+    "version": "0.0.1",
+    "codeowners": ["@smarthomewaldek"],
+    "config_flow": true,
+    "issue_tracker": "https://github.com/smarthomewaldek/ztm_tracker/issues",
+    "requirements": ["aiohttp"],
+    "dependencies": [],
+    "documentation": "https://github.com/smarthomewaldek/ztm_tracker/blob/main/README.md"
+}

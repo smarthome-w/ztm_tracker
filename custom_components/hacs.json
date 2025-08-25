@@ -1,0 +1,5 @@
+// HACS configuration file.
+{
+  "name": "ZTM Tracker",
+  "render_readme": true
+}
