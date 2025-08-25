@@ -1,10 +1,11 @@
 # **ZTM Tracker Home Assistant Integration**
 
-Integracja do Home Assistant, która śledzi autobusy ZTM w Gdańsku i powiadamia o ich zbliżaniu się do wybranej lokalizacji.
+Integracja do Home Assistant, która śledzi autobusy ZTM w Gdańsku i powiadamia o ich zbliżaniu się do lokalizacji
+jednego z twoich trakerów Home Assistant (np. telefonu).
 
 ## **Opis**
 
-Ta integracja pozwala na monitorowanie lokalizacji autobusów ZTM w Trójmieście. Wykorzystuje dane GPS udostępniane przez ZTM Gdańsk, aby określić, czy jakiś autobus znajduje się w zdefiniowanej strefie wokół jednego z Twoich **device\_trackers**.
+Ta integracja pozwala na monitorowanie lokalizacji autobusów ZTM w Trójmieście. Wykorzystuje dane GPS udostępniane przez ZTM Gdańsk, aby określić, czy jakiś autobus znajduje się w zdefiniowanej strefie wokół jednego z Twoich urządzeń.
 Integracja używa logiki opartej na shots\_in i shots\_out, aby uniknąć fałszywych alarmów spowodowanych chwilową utratą sygnału:
 
 * **shots\_in**: Autobus musi być wykryty w Twojej strefie przez określoną liczbę kolejnych cykli odświeżania, zanim zostanie uznane, że "wszedł" w strefę.
@@ -47,6 +48,20 @@ Integracja tworzy dwa sensory w Home Assistant:
 * **ZTM Tracker Last Route**
   * **state**: Zawiera numer ostatniej linii autobusowej, która została wykryta w pobliżu.
 
+## **Integracja: dlaczego taka i jak sobie radzi?**
+
+Bezpośrednim problemem, który rozwiązuje integracja jest uzyskanie informacji jakim autobusem/tramwajem porusza się
+się śledzona osoba. Ma to praktyczne znaczenie, kiedy ktoś wraca do domu i, w zależności od autobusu/tramwaju,
+musi dodatkowo dojść do określonego punktu.
+
+Jakość działania integracji zależy przede wszystkim od jakości danych uzyskiwanych z trakera/aplikacji Home Assistant.
+Z tym bywa różnie w naszym pięknym, zalesionym i pagórkowatym Gdańsku.
+
+Fałszywe wskazania pokazują się na głównych ciągach komunikacyjnych "okupowanych" przez tramwaje i autobusy.
+
+Dlatego w integracji jest kilka parametrów (whitelista, ilość zdarzeń wykrycia i opuszczenia strefy, promień strefy),
+które pozwalają na lepszą selektywność.
+
 ## **Autor**
 
 Autorem kodu jest Gemini AI. Moja rola ograniczyła się do:
@@ -55,3 +70,5 @@ Autorem kodu jest Gemini AI. Moja rola ograniczyła się do:
 - Testowania
 - Przeglądania kodu, kiedy AI zaczynało halucynować i wprowadzać błędy do już działającego kodu
 - Wpisywania kolejnych sugestii, poprawek, pomysłów na nowe parametry i ograniczenia.
+
+Dlaczego AI? Bo mi się nie chciało uczyć nowego frameworku. No i dlaczego nie?
