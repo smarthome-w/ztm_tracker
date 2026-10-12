@@ -58,14 +58,10 @@ class ZTMTrackerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry):
         """Get the options flow for this handler."""
-        return ZTMTrackerOptionsFlow(config_entry)
+        return ZTMTrackerOptionsFlow()
 
 class ZTMTrackerOptionsFlow(config_entries.OptionsFlow):
     """Handle options flow for ZTM Tracker."""
-
-    def __init__(self, config_entry):
-        """Initialize options flow."""
-        self.config_entry = config_entry # Store config_entry for access to data/options
 
     async def async_step_init(self, user_input=None):
         """Handle options flow."""

@@ -26,3 +26,10 @@ jobs:
 
             - name: Run Python lint
               run: ruff check .
+
+            - name: Install test dependencies
+              run: |
+                  pip install pytest pytest-asyncio homeassistant async_timeout
+
+            - name: Run unit tests
+              run: pytest -q tests/test_coordinator.py tests/test_config_flow.py
