@@ -36,7 +36,7 @@ Możesz skonfigurować następujące parametry:
 * CONF\_SHOTS\_OUT: Opcjonalny. Liczba kolejnych cykli odświeżania, w których autobus musi zniknąć ze strefy, aby zdarzenie zostało zakończone. Wartość domyślna to 3\.
 * CONF\_AUTOMATIC\_INTERVAL: Opcjonalny. Interwał odświeżania danych GPS z ZTM w minutach. Wartość domyślna to 3 minuty.
 * CONF\_GPS\_TIME\_OFFSET: Opcjonalny. Maksymalny wiek danych GPS autobusu w sekundach. Starsze dane zostaną zignorowane. Wartość domyślna to 120 sekund.
-* CONF\_LINES\_WHITELIST: Opcjonalny. Lista numerów linii autobusowych, oddzielona przecinkami, które mają być śledzone. Jeśli pusta, śledzone są wszystkie linie. Domyślna wartość to 2,5,12,169,171,179.
+* CONF\_LINES\_WHITELIST: Opcjonalny. Lista numerów linii autobusowych, oddzielona przecinkami, które mają być śledzone. Jeśli pusta, śledzone są wszystkie linie. Domyślna wartość to 2,5.
 
 ## **Sensory**
 
@@ -66,9 +66,9 @@ które pozwalają na lepszą selektywność.
 
 Autorem kodu jest Gemini AI. Moja rola ograniczyła się do:
 
-- Pomysłu na integrację i spisania tego do prompta
-- Testowania
-- Przeglądania kodu, kiedy AI zaczynało halucynować i wprowadzać błędy do już działającego kodu
-- Wpisywania kolejnych sugestii, poprawek, pomysłów na nowe parametry i ograniczenia.
+* Pomysłu na integrację i spisania tego do prompta
+* Testowania
+* Przeglądania kodu, kiedy AI zaczynało halucynować i wprowadzać błędy do już działającego kodu
+* Wpisywania kolejnych sugestii, poprawek, pomysłów na nowe parametry i ograniczenia.
 
 Dlaczego AI? Bo mi się nie chciało uczyć nowego frameworku. No i dlaczego nie?
