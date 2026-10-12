@@ -1,7 +1,7 @@
 """Unit tests for the ZTM Tracker coordinator."""
 
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
@@ -79,7 +79,7 @@ def test_haversine_returns_zero_for_the_same_point():
 def test_find_closest_vehicle_ignores_non_whitelisted_and_stale_vehicles():
     """Only the nearest valid vehicle should be selected."""
     coordinator, _ = _make_coordinator()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     valid_vehicle = {
         "vehicleId": "v-1",
         "routeShortName": "1",
@@ -126,7 +126,7 @@ def test_process_events_creates_new_event_and_updates_last_route():
             "routeShortName": "1",
             "lat": 52.22972,
             "lon": 21.01225,
-            "generated": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "generated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         }
     }
     coordinator._event_data = {}
