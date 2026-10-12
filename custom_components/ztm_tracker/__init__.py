@@ -1,37 +1,39 @@
 """The ZTM Tracker custom component."""
 import asyncio
 import logging
-from datetime import timedelta, datetime
 import math
-import zoneinfo # For timezone handling (Python 3.9+)
+import zoneinfo  # For timezone handling (Python 3.9+)
+from datetime import datetime, timedelta
 
 import aiohttp
 import async_timeout
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_RADIUS, STATE_UNAVAILABLE
-from homeassistant.core import HomeAssistant, State
+from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers.event import async_track_state_change, async_track_time_interval
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.helpers import aiohttp_client
+from homeassistant.helpers.event import (
+    async_track_state_change,
+    async_track_time_interval,
+)
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
-    DOMAIN,
-    CONF_DEVICE_TRACKERS,
-    CONF_DATA_FILE,
-    CONF_SHOTS_IN,
-    CONF_SHOTS_OUT,
     CONF_AUTOMATIC_INTERVAL,
+    CONF_DATA_FILE,
+    CONF_DEVICE_TRACKERS,
     CONF_GPS_TIME_OFFSET,
     CONF_LINES_WHITELIST,
-    DEFAULT_RADIUS,
-    DEFAULT_DATA_FILE,
-    DEFAULT_SHOTS_IN,
-    DEFAULT_SHOTS_OUT,
+    CONF_SHOTS_IN,
+    CONF_SHOTS_OUT,
     DEFAULT_AUTOMATIC_INTERVAL,
+    DEFAULT_DATA_FILE,
     DEFAULT_GPS_TIME_OFFSET,
     DEFAULT_LINES_WHITELIST,
+    DEFAULT_RADIUS,
+    DEFAULT_SHOTS_IN,
+    DEFAULT_SHOTS_OUT,
+    DOMAIN,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -107,7 +109,7 @@ class ZTMTrackerCoordinator(DataUpdateCoordinator):
         self.automatic_interval = self.config_entry.options.get(CONF_AUTOMATIC_INTERVAL, self.config_entry.data.get(CONF_AUTOMATIC_INTERVAL, DEFAULT_AUTOMATIC_INTERVAL))
         self.gps_time_offset = self.config_entry.options.get(CONF_GPS_TIME_OFFSET, self.config_entry.data.get(CONF_GPS_TIME_OFFSET, DEFAULT_GPS_TIME_OFFSET))
         self.lines_whitelist = self.config_entry.options.get(CONF_LINES_WHITELIST, self.config_entry.data.get(CONF_LINES_WHITELIST, DEFAULT_LINES_WHITELIST))
-        
+
         # Internal state
         self._vehicle_data = {}
         self._tracker_locations = {}
@@ -155,7 +157,7 @@ class ZTMTrackerCoordinator(DataUpdateCoordinator):
         self._state_change_listener_handles = async_track_state_change(
             self.hass, self.device_trackers, self._async_device_tracker_state_change
         )
-        
+
         # Set up a time listener to force a data update
         self._time_listener_handle = async_track_time_interval(
             self.hass, self._async_time_listener, timedelta(minutes=self.automatic_interval)
@@ -179,7 +181,7 @@ class ZTMTrackerCoordinator(DataUpdateCoordinator):
                 return
             await asyncio.sleep(1)
             attempt += 1
-        
+
         _LOGGER.warning("Timed out waiting for device trackers to become available. Some trackers might be unavailable.")
 
 
@@ -210,13 +212,13 @@ class ZTMTrackerCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self):
         """Fetch data from ZTM API and process it."""
         _LOGGER.debug("Starting data update from ZTM API.")
-        
+
         # First, update vehicle data
         await self._async_fetch_vehicle_data()
-        
+
         # Then, process events based on tracker locations and vehicle data
         self._async_process_events()
-        
+
         # Return event data for the coordinator's use
         return self._event_data
 
@@ -224,13 +226,13 @@ class ZTMTrackerCoordinator(DataUpdateCoordinator):
         """Fetch real-time vehicle data from the ZTM API."""
         try:
             websession = aiohttp_client.async_get_clientsession(self.hass)
-            
+
             # Use aiohttp client for fetching data
             async with async_timeout.timeout(30):
                 response = await websession.get(self.data_file)
                 response.raise_for_status()
                 data = await response.json()
-            
+
             if data and 'vehicles' in data:
                 # Store the raw vehicle data, using 'vehicleId' as the key
                 # Corrected to use lowercase 'vehicles' and 'vehicleId'
@@ -241,7 +243,7 @@ class ZTMTrackerCoordinator(DataUpdateCoordinator):
 
         except aiohttp.ClientError as err:
             raise UpdateFailed(f"Error fetching data from ZTM API: {err}") from err
-        except asyncio.TimeoutError:
+        except TimeoutError:
             raise UpdateFailed("Timeout while fetching data from ZTM API.")
         except Exception as err:
             raise UpdateFailed(f"Unexpected error while fetching data: {err}") from err
@@ -251,29 +253,29 @@ class ZTMTrackerCoordinator(DataUpdateCoordinator):
         new_event_data = {}
         for tracker_id, tracker_location in self._tracker_locations.items():
             _LOGGER.debug("Processing events for tracker %s at location %s.", tracker_id, tracker_location)
-            
+
             # Get the friendly name of the device tracker
             tracker_state = self.hass.states.get(tracker_id)
             tracker_name = tracker_state.name if tracker_state and tracker_state.name else tracker_id
-            
+
             # Find the closest vehicle for this tracker
             closest_vehicle = self._find_closest_vehicle(tracker_location)
-            
+
             if closest_vehicle:
                 vehicle_id = closest_vehicle.get('vehicleId')
                 distance_to_vehicle = closest_vehicle.get('distance')
-                
+
                 # Check for "shots in" condition
                 if distance_to_vehicle <= self.radius:
                     _LOGGER.info("Vehicle %s is within radius for tracker %s.", vehicle_id, tracker_id)
-                    
+
                     # Update the last seen route immediately upon detection
                     route = closest_vehicle.get('routeShortName', 'Unknown')
                     new_last_route = f"{tracker_name} - {route}"
                     if self._last_route_seen.get(tracker_id) != new_last_route:
                         self._last_route_seen[tracker_id] = new_last_route
                         _LOGGER.info("Last route for tracker %s updated to: %s", tracker_id, new_last_route)
-                    
+
                     # Check if this vehicle has already been seen by this tracker
                     if self._event_data.get(tracker_id) and self._event_data[tracker_id].get('vehicle') == vehicle_id:
                         # Increment 'shots_in' count
@@ -302,7 +304,7 @@ class ZTMTrackerCoordinator(DataUpdateCoordinator):
                     if self._event_data.get(tracker_id):
                         shots_out = self._event_data[tracker_id].get('shots_out', 0) + 1
                         _LOGGER.debug("Incrementing shots_out for tracker %s. New count: %d", tracker_id, shots_out)
-                        
+
                         # Continue the event if shots_out limit is not reached
                         if shots_out < self.shots_out:
                             _LOGGER.debug("Tracker %s is moving away, but event continues.", tracker_id)
@@ -333,7 +335,7 @@ class ZTMTrackerCoordinator(DataUpdateCoordinator):
                         }
                     else:
                         _LOGGER.info("Event ended for tracker %s. No vehicle nearby.", tracker_id)
-        
+
         # Update the main event data dictionary
         self._event_data = new_event_data
         _LOGGER.info("Event processing complete. Found %d active events.", len(self._event_data))
@@ -347,7 +349,7 @@ class ZTMTrackerCoordinator(DataUpdateCoordinator):
 
         # Prepare whitelist
         lines_whitelist = {line.strip() for line in self.lines_whitelist.split(',') if line.strip()}
-        
+
         min_distance = float('inf')
         closest_vehicle = None
 
@@ -372,7 +374,7 @@ class ZTMTrackerCoordinator(DataUpdateCoordinator):
             if CET_TIMEZONE:
                 try:
                     # Parse the ISO 8601 string to a datetime object. The 'Z' at the end indicates UTC.
-                    gps_time = datetime.fromisoformat(vehicle_gps_timestamp_str.replace('Z', '+00:00')).astimezone(CET_TIMEZONE)
+                    gps_time = datetime.fromisoformat(vehicle_gps_timestamp_str).astimezone(CET_TIMEZONE)
                     current_time = datetime.now(CET_TIMEZONE)
                     time_diff = abs((current_time - gps_time).total_seconds())
 
@@ -397,7 +399,7 @@ class ZTMTrackerCoordinator(DataUpdateCoordinator):
                 closest_vehicle['distance'] = distance # Add distance to the vehicle dict
 
         _LOGGER.debug("Closest vehicle found: %s with distance: %s", closest_vehicle.get('vehicleId') if closest_vehicle else "None", min_distance if closest_vehicle else "N/A")
-        
+
         return closest_vehicle
 
     def _haversine(self, lat1, lon1, lat2, lon2):
@@ -417,5 +419,5 @@ class ZTMTrackerCoordinator(DataUpdateCoordinator):
         a = math.sin(dlat / 2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2)**2
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         distance = EARTH_RADIUS_METERS * c
-        
+
         return distance

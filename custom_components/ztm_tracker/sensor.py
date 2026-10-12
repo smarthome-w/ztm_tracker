@@ -7,8 +7,8 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from . import ZTMTrackerCoordinator  # Corrected import statement
 from .const import DOMAIN
-from . import ZTMTrackerCoordinator # Corrected import statement
 
 _LOGGER = logging.getLogger(__name__)
 

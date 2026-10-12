@@ -1,28 +1,28 @@
 """Config flow for ZTM Tracker custom component."""
 import voluptuous as vol
-
 from homeassistant import config_entries
 from homeassistant.const import CONF_RADIUS
 from homeassistant.core import callback
 from homeassistant.helpers import selector
 
 from .const import (
-    DOMAIN,
-    CONF_DEVICE_TRACKERS,
+    CONF_AUTOMATIC_INTERVAL,
     CONF_DATA_FILE,
+    CONF_DEVICE_TRACKERS,
+    CONF_GPS_TIME_OFFSET,
+    CONF_LINES_WHITELIST,
     CONF_SHOTS_IN,
     CONF_SHOTS_OUT,
-    CONF_AUTOMATIC_INTERVAL,
-    CONF_GPS_TIME_OFFSET,
-    CONF_LINES_WHITELIST, # Added constant
-    DEFAULT_RADIUS,
+    DEFAULT_AUTOMATIC_INTERVAL,
     DEFAULT_DATA_FILE,
+    DEFAULT_GPS_TIME_OFFSET,
+    DEFAULT_LINES_WHITELIST,
+    DEFAULT_RADIUS,
     DEFAULT_SHOTS_IN,
     DEFAULT_SHOTS_OUT,
-    DEFAULT_AUTOMATIC_INTERVAL,
-    DEFAULT_GPS_TIME_OFFSET,
-    DEFAULT_LINES_WHITELIST, # Added default value
+    DOMAIN,
 )
+
 
 class ZTMTrackerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for ZTM Tracker."""
